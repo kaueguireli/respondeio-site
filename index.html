@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responde.io - Recepcionistas de IA para WhatsApp</title>
+
+  <!-- Fontes Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- AOS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --color-white:#FFFFFF;
+      --color-primary:#2563EB;
+      --color-text-gray:#6B7280;
+      --color-light-blue:#EFF6FF;
+      --color-gradient-start:#3B82F6;
+      --color-gradient-end:#2563EB;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Inter',sans-serif; color:#1F2937; line-height:1.6;
+      background:var(--color-white); overflow-x:hidden; scroll-behavior:smooth;
+    }
+    .container{max-width:1200px;margin:0 auto;padding:0 20px}
+    .text-center{text-align:center}
+    .mt-12{margin-top:3rem}
+    .mb-12{margin-bottom:3rem}
+
+    h1,h2,h3{color:#111827;font-weight:700}
+    h1{font-size:clamp(2.5rem,5vw,3.5rem);line-height:1.1}
+    h2{font-size:clamp(2rem,4vw,2.5rem);line-height:1.2;margin-bottom:1rem}
+    h3{font-size:1.5rem;line-height:1.3;margin-bottom:.75rem}
+    p{color:var(--color-text-gray);font-size:1.125rem;max-width:700px;margin-left:auto;margin-right:auto}
+    p.subtitle{margin-bottom:3.5rem}
+
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:.9rem 1.8rem;border-radius:9999px;font-weight:600;font-size:1rem;
+      text-decoration:none;transition:all .3s ease;border:none;cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.08);
+    }
+    .btn-primary{
+      background-image:linear-gradient(to right,var(--color-gradient-start),var(--color-gradient-end));
+      color:#fff;
+    }
+    .btn-primary:hover{box-shadow:0 6px 20px rgba(37,99,235,.3);transform:translateY(-2px)}
+    .btn-secondary{
+      background:#fff;color:#374151;border:1px solid #D1D5DB;box-shadow:0 2px 4px rgba(0,0,0,.04)
+    }
+    .btn-secondary:hover{box-shadow:0 4px 10px rgba(0,0,0,.08);transform:translateY(-2px);border-color:#9CA3AF}
+
+    /* =================== HEADER / NAVBAR =================== */
+    header{
+      position:fixed;top:0;left:0;width:100%;
+      background-color:rgba(255,255,255,.85);
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+      z-index:1000;padding:.85rem 0;transition:box-shadow .25s ease, transform .25s ease;
+    }
+    header.is-scrolled{box-shadow:0 10px 28px rgba(16,24,40,.08)}
+    header nav{display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+
+    .logo-container{display:flex;align-items:center;gap:10px;text-decoration:none;color:#111827;font-size:1.25rem;font-weight:800;flex-shrink:0}
+    .logo-container img{height:26px;width:auto;display:block}
+
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links a{
+      position:relative;text-decoration:none;color:var(--color-text-gray);
+      font-weight:600;font-size:.95rem;padding:8px 2px;transition:color .2s
+    }
+    .nav-links a:not(.btn-nav)::after{
+      content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;
+      background:var(--color-primary);transform:scaleX(0);transform-origin:left;transition:transform .2s
+    }
+    .nav-links a:hover{color:#111827}
+    .nav-links a:hover:not(.btn-nav)::after{transform:scaleX(1)}
+    .nav-links a.is-active{color:#111827}
+    .nav-links a.is-active:not(.btn-nav)::after{transform:scaleX(1)}
+
+    .btn-nav{
+      padding:.6rem 1rem;border-radius:9999px;font-size:.9rem;font-weight:700;
+      background-image:linear-gradient(to right,var(--color-gradient-start),var(--color-gradient-end));
+      color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.25);white-space:nowrap;transition:transform .2s, filter .2s
+    }
+    .btn-nav:hover{transform:translateY(-1px);filter:brightness(1.05)}
+    .btn-nav:active{transform:translateY(0)}
+
+    .hamburger-menu{display:none;cursor:pointer;margin-left:8px}
+    .hamburger-menu svg{width:30px;height:30px;stroke:#111827}
+    .close-menu{display:none;position:absolute;top:1.25rem;right:1.25rem;cursor:pointer;z-index:1002}
+    .close-menu svg{width:30px;height:30px;stroke:#111827}
+
+    @media (max-width:992px){
+      .nav-links{
+        position:fixed;top:0;right:-100%;width:min(86vw,360px);height:100dvh;background:#fff;
+        box-shadow:-24px 0 40px rgba(2,6,23,.18);flex-direction:column;align-items:flex-start;
+        padding:5.5rem 1.5rem 1.5rem;gap:18px;transition:right .25s ease;z-index:1001
+      }
+      .nav-links.active{right:0}
+      .nav-links a{font-size:1.05rem;width:100%}
+      .nav-links .btn-nav{width:100%;text-align:center;padding:.85rem 1rem}
+      .hamburger-menu{display:block}
+      .close-menu{display:block}
+    }
+    /* ================= END HEADER ================= */
+
+    section{padding:80px 0;overflow:hidden}
+    section:nth-of-type(odd){background:var(--color-white)}
+    section:nth-of-type(even){background:var(--color-light-blue)}
+
+    #hero{padding:140px 0 60px 0;text-align:center}
+    #hero .badge{
+      display:inline-block;background:var(--color-light-blue);color:var(--color-primary);
+      padding:8px 20px;border-radius:9999px;font-size:.9rem;font-weight:600;margin-bottom:20px;border:1px solid #BEE3F8
+    }
+    #hero h1{max-width:800px;margin:0 auto 20px}
+    #hero p{max-width:700px;margin:0 auto 40px;font-size:1.2rem}
+    #hero .hero-buttons{display:flex;justify-content:center;gap:20px;margin-bottom:40px;flex-wrap:wrap}
+    #hero .metrics{display:flex;justify-content:center;gap:50px;margin-top:60px;flex-wrap:wrap}
+    #hero .metric-item{text-align:center}
+    #hero .metric-item strong{display:block;font-size:2rem;font-weight:700;color:var(--color-primary);margin-bottom:5px}
+    #hero .metric-item span{color:var(--color-text-gray);font-size:1rem}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+    .card{
+      background:#fff;padding:30px;border-radius:16px;border:1px solid #E5E7EB;
+      box-shadow:0 8px 16px rgba(0,0,0,.05);transition:transform .3s, box-shadow .3s;
+      display:flex;flex-direction:column;align-items:flex-start
+    }
+    .card:hover{transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,.08)}
+    .card .icon{
+      width:50px;height:50px;background:var(--color-light-blue);border-radius:12px;display:flex;align-items:center;justify-content:center;
+      margin-bottom:20px;font-size:1.8rem;color:var(--color-primary);border:1px solid #DBEAFE
+    }
+    .card h3{font-size:1.3rem;margin-bottom:10px;color:#111827}
+    .card p{font-size:1rem;color:var(--color-text-gray);margin:0}
+
+    .how-it-works-list{
+      margin-top:50px;display:grid;grid-template-columns:1fr;gap:25px;max-width:900px;margin-left:auto;margin-right:auto
+    }
+    .how-it-works-item{
+      display:flex;align-items:center;gap:25px;background:var(--color-light-blue);padding:25px;border-radius:15px;
+      box-shadow:0 5px 15px rgba(0,0,0,.04);border:1px solid #DBEAFE
+    }
+    .how-it-works-item .icon{
+      width:50px;height:50px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      font-size:1.8rem;color:var(--color-primary);flex-shrink:0;box-shadow:0 2px 5px rgba(0,0,0,.05)
+    }
+    .how-it-works-item .content{text-align:left}
+    .how-it-works-item .content h3{margin:0 0 5px 0;font-size:1.3rem}
+    .how-it-works-item .content p{font-size:1rem;margin:0}
+    #how-it-works .visual-content{margin-top:60px;text-align:center}
+
+    #technologies .tech-image{margin-top:50px;text-align:center}
+
+    .testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px}
+    .testimonial-card{
+      background:#fff;padding:30px;border-radius:16px;border:1px solid #E5E7EB;
+      box-shadow:0 8px 16px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:15px;transition:transform .3s, box-shadow .3s
+    }
+    .testimonial-card:hover{transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,.08)}
+    .testimonial-card p{font-size:1rem;font-style:italic;color:#374151;margin:0}
+    .testimonial-card .stars{color:#FBBF24;font-size:1.2rem}
+    .testimonial-card .author-info{display:flex;align-items:center;gap:15px;margin-top:10px}
+    .testimonial-card .author-avatar{width:50px;height:50px;border-radius:50%;background:var(--color-light-blue);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--color-primary);font-weight:500;overflow:hidden}
+    .testimonial-card .author-avatar img{width:100%;height:100%;object-fit:cover}
+    .testimonial-card .author-details strong{display:block;font-size:1.1rem;color:#111827}
+    .testimonial-card .author-details span{font-size:.9rem;color:var(--color-text-gray)}
+
+    #faq{background:#fff}
+    .faq-accordion{margin-top:50px;max-width:800px;margin-left:auto;margin-right:auto}
+    .accordion-item{
+      background:#fff;border-radius:15px;margin-bottom:15px;border:1px solid #E5E7EB;
+      box-shadow:0 5px 15px rgba(0,0,0,.04);overflow:hidden;transition:margin-bottom .3s
+    }
+    .accordion-item:hover{box-shadow:0 8px 20px rgba(0,0,0,.06)}
+    .accordion-header{
+      display:flex;justify-content:space-between;align-items:center;padding:20px 25px;cursor:pointer;font-weight:600;font-size:1.15rem;color:#111827}
+    .accordion-header .arrow{font-size:1.5rem;transform:rotate(0deg);transition:transform .3s;color:var(--color-primary)}
+    .accordion-item.active .accordion-header .arrow{transform:rotate(180deg)}
+    .accordion-content{padding:0 25px;max-height:0;overflow:hidden;transition:max-height .4s ease-out, padding .3s ease-out}
+    .accordion-content p{padding-bottom:20px;margin:0;padding-top:10px;font-size:1rem}
+    .accordion-item.active .accordion-content{border-top:1px solid #E5E7EB}
+    #faq .faq-image{margin-top:60px;text-align:center}
+
+    #cta-final{
+      text-align:center;background:var(--color-primary);color:#fff;padding:100px 0;position:relative;overflow:hidden
+    }
+    #cta-final h2{color:#fff;max-width:800px;margin:0 auto 20px}
+    #cta-final p{color:rgba(255,255,255,.9);max-width:700px;margin:0 auto 40px}
+    #cta-final .cta-buttons{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+    #cta-final .btn-cta-primary{background-image:linear-gradient(to right,#ffffff,#f0f0f0);color:var(--color-primary);font-weight:700}
+    #cta-final .btn-cta-primary:hover{box-shadow:0 6px 20px rgba(255,255,255,.3);transform:translateY(-2px)}
+    #cta-final .btn-cta-secondary{background:transparent;color:#fff;border:2px solid #fff}
+    #cta-final .btn-cta-secondary:hover{background:#fff;color:var(--color-primary);transform:translateY(-2px)}
+
+    footer{background:#fff;color:var(--color-text-gray);padding:40px 0;text-align:center;font-size:.9rem;border-top:1px solid #E5E7EB}
+
+    /* Overlay p/ mobile */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;opacity:0;visibility:hidden;transition:opacity .25s, visibility .25s}
+    .overlay.active{opacity:1;visibility:visible}
+
+    @media (max-width:768px){
+      h1{font-size:2.2rem} h2{font-size:1.8rem} h3{font-size:1.3rem} p{font-size:1rem} p.subtitle{margin-bottom:2.5rem}
+      .btn{padding:.8rem 1.5rem;font-size:1rem;width:100%;max-width:350px}
+      #hero .hero-buttons,#cta-final .cta-buttons{flex-direction:column;gap:15px;align-items:center}
+      .cards-grid,.testimonials-grid{grid-template-columns:1fr}
+      .how-it-works-item{flex-direction:column;align-items:center;text-align:center}.how-it-works-item .icon{margin-bottom:10px}.how-it-works-item .content{text-align:center}
+      #hero .metrics{gap:30px;margin-top:40px}
+      section{padding:60px 0}
+      #cta-final{padding:80px 0}
+      #hero{padding-top:120px}
+    }
+    @media (max-width:480px){.logo-container{font-size:1.2rem}}
+    /* === FIX CTA "Fale com um especialista" desbotado === */
+.nav-links a.btn-nav{
+  color:#fff !important;                      /* garante branco */
+  font-weight: 800;                           /* mais presença */
+  background-image: linear-gradient(90deg,#2563EB 0%, #1D4ED8 100%); /* azul mais profundo */
+  text-shadow: 0 1px 0 rgba(0,0,0,.18);       /* melhora leitura no azul */
+  box-shadow: 0 10px 24px rgba(37,99,235,.35);
+  filter:none !important;                     /* evita esmaecer em hovers herdados */
+}
+
+.nav-links a.btn-nav::after{ display:none !important; } /* sem sublinhado animado no CTA */
+
+.nav-links a.btn-nav:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(37,99,235,.45);
+}
+
+.nav-links a.btn-nav:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.95),
+    0 0 0 6px rgba(37,99,235,.55);
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header id="site-header">
+    <div class="container">
+      <nav>
+        <a href="#hero" class="logo-container">
+          <img src="https://i.imgur.com/VL9NRYR.png" alt="Responde.io — logo" loading="lazy" decoding="async"/>
+          <span>Responde.io</span>
+        </a>
+
+        <div class="nav-links" role="navigation" aria-label="Principal">
+          <div class="close-menu" aria-label="Fechar menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#depoimentos">Depoimentos</a>
+          <a href="#cta-final">Demonstração</a>
+          <a href="https://wa.me/5513978286116?text=Ol%C3%A1!%20Quero%20uma%20demo%20da%20Responde.io."
+             target="_blank" rel="noopener" class="btn-nav">Fale com um especialista</a>
+        </div>
+
+        <div class="hamburger-menu" aria-label="Abrir menu" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+          </svg>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <div class="overlay"></div>
+
+  <!-- HERO -->
+  <section id="hero" data-aos="fade-in">
+    <div class="container">
+      <span class="badge" data-aos="fade-up" data-aos-delay="100">+30 empresas já automatizam seus atendimentos conosco</span>
+      <h1 data-aos="fade-up" data-aos-delay="200">Atenda clientes 24h com uma Recepcionista de IA</h1>
+      <p data-aos="fade-up" data-aos-delay="300">Nossa IA atende seus clientes, marca consultas e responde dúvidas — tudo pelo WhatsApp.</p>
+
+      <div class="hero-buttons" data-aos="fade-up" data-aos-delay="400">
+        <a href="https://wa.me/5513978286116?text=Ol%C3%A1!%20Quero%20uma%20demo%20da%20Responde.io." target="_blank" class="btn btn-primary">Testar Atendimento Agora</a>
+        <button class="btn btn-secondary" onclick="alert('Funcionalidade de vídeo demo em breve!')">Ver Demonstração</button>
+      </div>
+
+      <div class="metrics" data-aos="fade-up" data-aos-delay="500">
+        <div class="metric-item"><strong>+1000</strong><span>mensagens/mês</span></div>
+        <div class="metric-item"><strong>–70%</strong><span>custo com recepção</span></div>
+        <div class="metric-item"><strong>24h</strong><span>todos os dias</span></div>
+      </div>
+
+      <div data-aos="fade-up" data-aos-delay="600">
+        <img src="https://i.imgur.com/qjJ38Ox.png"
+             alt="Integração WhatsApp, IA, agenda e banco de dados"
+             loading="lazy" decoding="async"
+             style="max-width:600px;width:100%;height:auto;display:block;margin:24px auto;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);" />
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section id="why-choose-us" class="text-center">
+    <div class="container" data-aos="fade-up">
+      <h2>Por que escolher a Responde.io</h2>
+      <p class="subtitle">Tecnologia de ponta para transformar seu atendimento.</p>
+
+      <div class="cards-grid">
+        <div class="card" data-aos="fade-up" data-aos-delay="100">
+          <div class="icon">📉</div>
+          <h3>Reduza custos fixos mantendo qualidade</h3>
+          <p>Economize até 70% em custos com recepção sem perder qualidade.</p>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
+          <div class="icon">🤖</div>
+          <h3>IA com tom humano e pausas naturais</h3>
+          <p>Conversas que soam reais, com empatia e naturalidade.</p>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="300">
+          <div class="icon">🔗</div>
+          <h3>Integração com agenda e CRM</h3>
+          <p>Conecta com as ferramentas do seu negócio.</p>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="400">
+          <div class="icon">⏰</div>
+          <h3>Atendimento 24/7, inclusive feriados</h3>
+          <p>Sua empresa nunca para de atender.</p>
+        </div>
+      </div>
+
+      <div class="mt-12" data-aos="fade-up" data-aos-delay="500">
+        <img src="https://i.imgur.com/epH7XKt.png"
+             alt="Atendimento 24/7 com ícones de conversa e relógio"
+             loading="lazy" decoding="async"
+             style="max-width:600px;width:100%;height:auto;display:block;margin:24px auto;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);" />
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section id="como-funciona" class="text-center">
+    <div class="container" data-aos="fade-up">
+      <h2>Como funciona</h2>
+      <p class="subtitle">Processo simples em 4 etapas para começar a automatizar.</p>
+
+      <div class="how-it-works-list">
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="100">
+          <div class="icon">📋</div>
+          <div class="content"><h3>Brief e objetivos</h3><p>Entendemos seu negócio e o tom de voz da IA.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="200">
+          <div class="icon">🧠</div>
+          <div class="content"><h3>Treinamento da IA</h3><p>Configuramos respostas e comportamentos específicos.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="300">
+          <div class="icon">⛓️</div>
+          <div class="content"><h3>Integrações</h3><p>Conectamos WhatsApp, agenda e CRM automaticamente.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="400">
+          <div class="icon">🚀</div>
+          <div class="content"><h3>Go-live em até 72h</h3><p>Sua recepcionista de IA pronta para atender.</p></div>
+        </div>
+      </div>
+
+      <div class="visual-content" data-aos="fade-up" data-aos-delay="500"></div>
+    </div>
+  </section>
+
+  <!-- TECNOLOGIAS -->
+  <section id="technologies" class="text-center">
+    <div class="container" data-aos="fade-up">
+      <h2>Tecnologias que utilizamos</h2>
+      <div class="tech-image" data-aos="fade-up" data-aos-delay="100">
+        <img src="https://i.imgur.com/uNTRBs7.png"
+             alt="Logos: Twilio, Meta, OpenAI, Google Cloud, ElevenLabs, Vapi, Retell AI"
+             loading="lazy" decoding="async"
+             style="max-width:600px;width:100%;height:auto;display:block;margin:24px auto;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);" />
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS -->
+  <section id="depoimentos" class="text-center">
+    <div class="container" data-aos="fade-up">
+      <h2>O que nossos clientes dizem</h2>
+      <p class="subtitle">Resultados reais de quem já automatizou o atendimento.</p>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="stars">★★★★★</div>
+          <p>“Economizei R$2.000/mês em custos fixos. A IA marca consultas sem erros e os pacientes adoram a praticidade.”</p>
+          <div class="author-info">
+            <div class="author-avatar"><img src="https://placehold.co/50x50/e0e7ff/2563eb?text=JD" alt="Avatar Juliana Demani"></div>
+            <div class="author-details"><strong>Juliana Demani</strong><span>Clínica Odontológica</span></div>
+          </div>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="stars">★★★★★</div>
+          <p>“A IA parece natural demais. Supera minhas expectativas todos os dias e libera minha equipe para tarefas mais importantes.”</p>
+          <div class="author-info">
+            <div class="author-avatar"><img src="https://placehold.co/50x50/e0e7ff/2563eb?text=MS" alt="Avatar Marcos Santos"></div>
+            <div class="author-details"><strong>Marcos Santos</strong><span>Escritório de Advocacia</span></div>
+          </div>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="300">
+          <div class="stars">★★★★★</div>
+          <p>“Atendimento 24h sem precisar contratar mais pessoas. Sistema se adapta perfeitamente ao nosso negócio.”</p>
+          <div class="author-info">
+            <div class="author-avatar"><img src="https://placehold.co/50x50/e0e7ff/2563eb?text=CG" alt="Avatar Carla Girardi"></div>
+            <div class="author-details"><strong>Carla Girardi</strong><span>Clínica de Estética</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="text-center">
+    <div class="container" data-aos="fade-up">
+      <h2>Perguntas Frequentes</h2>
+      <p class="subtitle">Tudo o que você precisa saber sobre nossa solução.</p>
+
+      <div class="faq-accordion">
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="accordion-header">E se o cliente quiser falar com um humano?<span class="arrow">▼</span></div>
+          <div class="accordion-content"><p>Nossa IA é treinada para identificar a necessidade de um atendimento humano e pode transferir a conversa para sua equipe, seja no WhatsApp ou em outra plataforma.</p></div>
+        </div>
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="accordion-header">Posso personalizar o comportamento da IA?<span class="arrow">▼</span></div>
+          <div class="accordion-content"><p>Sim, completamente! Desde o tom de voz, respostas específicas, até a integração com seus sistemas internos. A IA é adaptada às suas necessidades.</p></div>
+        </div>
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="accordion-header">Em quanto tempo tudo está funcionando?<span class="arrow">▼</span></div>
+          <div class="accordion-content"><p>Após a fase de brief e treinamento, sua recepcionista de IA pode estar pronta para atender em até 72 horas. Nosso processo é ágil e eficiente.</p></div>
+        </div>
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="400">
+          <div class="accordion-header">A IA funciona para qualquer tipo de negócio?<span class="arrow">▼</span></div>
+          <div class="accordion-content"><p>Nossa solução é flexível e pode ser adaptada para diversos segmentos, desde clínicas, escritórios de advocacia, e-commerces até serviços de consultoria. Entendemos seu negócio e personalizamos a IA.</p></div>
+        </div>
+        <div class="accordion-item" data-aos="fade-up" data-aos-delay="500">
+          <div class="accordion-header">Preciso contratar um plano de WhatsApp Business?<span class="arrow">▼</span></div>
+          <div class="accordion-content"><p>Sim, a Responde.io utiliza a API oficial do WhatsApp Business para garantir segurança, escala e todos os recursos necessários para um atendimento profissional. Podemos auxiliar você nesse processo.</p></div>
+        </div>
+      </div>
+
+      <div class="faq-image" data-aos="fade-up" data-aos-delay="600">
+        <img src="https://i.imgur.com/bVTNs6i.png"
+             alt="Ícone de dúvida 3D em estilo chat"
+             loading="lazy" decoding="async"
+             style="max-width:600px;width:100%;height:auto;display:block;margin:24px auto;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);" />
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta-final">
+    <div class="container" data-aos="fade-up">
+      <h2>Ative sua Recepcionista de IA e nunca mais perca uma mensagem.</h2>
+      <p>Fale com um especialista e receba uma demo personalizada para sua empresa.</p>
+      <div class="cta-buttons">
+        <a href="https://wa.me/5513978286116?text=Ol%C3%A1!%20Quero%20uma%20demo%20da%20Responde.io." target="_blank" class="btn btn-cta-primary">Falar no WhatsApp</a>
+      <button class="btn btn-cta-secondary" onclick="alert('Funcionalidade de vídeo demo em breve!')">Ver Demonstração</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container"><p>Responde.io © 2025 | @responde.io</p></div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // AOS
+    AOS.init({ duration:800, once:true, mirror:false, offset:50 });
+
+    // Accordion FAQ
+    document.querySelectorAll('.accordion-header').forEach(header=>{
+      header.addEventListener('click',()=>{
+        const item=header.closest('.accordion-item');
+        const content=header.nextElementSibling;
+        const open=item.classList.contains('active');
+        item.classList.toggle('active');
+        content.style.maxHeight = open ? 0 : content.scrollHeight+'px';
+      });
+    });
+
+    // NAVBAR (scroll shadow, active link, mobile drawer)
+    document.addEventListener('DOMContentLoaded', () => {
+      const header = document.getElementById('site-header');
+      const hamburger = document.querySelector('.hamburger-menu');
+      const closeMenu = document.querySelector('.close-menu');
+      const navLinks = document.querySelector('.nav-links');
+      const overlay = document.querySelector('.overlay');
+      const pageLinks = document.querySelectorAll('a[href^="#"]:not(.logo-container)');
+      const menuLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+      const getHeaderH = () => header.offsetHeight;
+
+      const onScroll = () => {
+        if (window.scrollY > 8) header.classList.add('is-scrolled'); else header.classList.remove('is-scrolled');
+        highlightActive();
+      };
+      window.addEventListener('scroll', onScroll); onScroll();
+
+      const openMobile = () => {
+        navLinks.classList.add('active'); overlay.classList.add('active');
+        document.body.style.overflow='hidden'; hamburger.setAttribute('aria-expanded','true');
+      };
+      const closeMobile = () => {
+        navLinks.classList.remove('active'); overlay.classList.remove('active');
+        document.body.style.overflow='auto'; hamburger.setAttribute('aria-expanded','false');
+      };
+      hamburger.addEventListener('click', openMobile);
+      closeMenu.addEventListener('click', closeMobile);
+      overlay.addEventListener('click', closeMobile);
+
+      pageLinks.forEach(a=>{
+        a.addEventListener('click',e=>{
+          const id=a.getAttribute('href'); if(!id||id==='#')return;
+          const el=document.querySelector(id); if(!el)return;
+          e.preventDefault();
+          const top=el.getBoundingClientRect().top+window.pageYOffset-getHeaderH()-6;
+          window.scrollTo({top,behavior:'smooth'});
+          if(navLinks.classList.contains('active')) closeMobile();
+        });
+      });
+
+      function highlightActive(){
+        const sections=[...menuLinks].map(l=>document.querySelector(l.getAttribute('href'))).filter(Boolean);
+        let current=null; const offset=getHeaderH()+24;
+        sections.forEach(sec=>{
+          const y=sec.getBoundingClientRect().top+window.pageYOffset;
+          if(window.pageYOffset+offset>=y) current='#'+sec.id;
+        });
+        menuLinks.forEach(l=>l.classList.toggle('is-active', l.getAttribute('href')===current));
+      }
+      highlightActive();
+    });
+  </script>
+</body>
+</html>
