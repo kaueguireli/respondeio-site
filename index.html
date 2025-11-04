@@ -335,24 +335,24 @@
       <h2>Como funciona</h2>
       <p class="subtitle">Processo simples em 4 etapas para começar a automatizar.</p>
 
-    <div class="how-it-works-list">
-      <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="100">
-        <div class="icon">📋</div>
-        <div class="content"><h3>Brief e objetivos</h3><p>Entendemos seu negócio e o tom de voz da IA.</p></div>
+      <div class="how-it-works-list">
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="100">
+          <div class="icon">📋</div>
+          <div class="content"><h3>Brief e objetivos</h3><p>Entendemos seu negócio e o tom de voz da IA.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="200">
+          <div class="icon">🧠</div>
+          <div class="content"><h3>Treinamento da IA</h3><p>Configuramos respostas e comportamentos específicos.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="300">
+          <div class="icon">⛓️</div>
+          <div class="content"><h3>Integrações</h3><p>Conectamos WhatsApp, agenda e CRM automaticamente.</p></div>
+        </div>
+        <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="400">
+          <div class="icon">🚀</div>
+          <div class="content"><h3>Go-live em até 72h</h3><p>Sua recepcionista de IA pronta para atender.</p></div>
+        </div>
       </div>
-      <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="200">
-        <div class="icon">🧠</div>
-        <div class="content"><h3>Treinamento da IA</h3><p>Configuramos respostas e comportamentos específicos.</p></div>
-      </div>
-      <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="300">
-        <div class="icon">⛓️</div>
-        <div class="content"><h3>Integrações</h3><p>Conectamos WhatsApp, agenda e CRM automaticamente.</p></div>
-      </div>
-      <div class="how-it-works-item" data-aos="fade-right" data-aos-delay="400">
-        <div class="icon">🚀</div>
-        <div class="content"><h3>Go-live em até 72h</h3><p>Sua recepcionista de IA pronta para atender.</p></div>
-      </div>
-    </div>
 
       <div class="visual-content" data-aos="fade-up" data-aos-delay="500"></div>
     </div>
@@ -478,34 +478,17 @@
       });
     });
 
-    // NAVBAR (scroll shadow, active link, mobile drawer)
+    // NAVBAR + Drawer mobile (iOS friendly)
     document.addEventListener('DOMContentLoaded', () => {
       const header = document.getElementById('site-header');
       const hamburger = document.querySelector('.hamburger-menu');
-      const closeMenu = document.querySelector('.close-menu');
+      const closeMenuBtn = document.querySelector('.close-menu');
       const navLinks = document.querySelector('.nav-links');
       const overlay = document.querySelector('.overlay');
       const pageLinks = document.querySelectorAll('a[href^="#"]:not(.logo-container)');
       const menuLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+      const allMenuAnchors = document.querySelectorAll('.nav-links a');
       const getHeaderH = () => header.getBoundingClientRect().height;
-
-      // Estado para restaurar scroll ao fechar o drawer no iOS
-      let scrollYBeforeOpen = 0;
-
-      const lockBody = () => {
-        scrollYBeforeOpen = window.scrollY || document.documentElement.scrollTop;
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollYBeforeOpen}px`;
-        document.body.style.left = '0';
-        document.body.style.right = '0';
-      };
-      const unlockBody = () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        window.scrollTo(0, scrollYBeforeOpen);
-      };
 
       const onScroll = () => {
         if (window.scrollY > 8) header.classList.add('is-scrolled'); else header.classList.remove('is-scrolled');
@@ -513,22 +496,28 @@
       };
       window.addEventListener('scroll', onScroll); onScroll();
 
+      const lockBody = () => { document.body.style.overflow='hidden'; };
+      const unlockBody = () => { document.body.style.overflow='auto'; };
+
       const openMobile = () => {
-        navLinks.classList.add('active'); overlay.classList.add('active');
+        navLinks.classList.add('active');
+        overlay.classList.add('active');
         hamburger.setAttribute('aria-expanded','true');
         lockBody();
       };
       const closeMobile = () => {
-        navLinks.classList.remove('active'); overlay.classList.remove('active');
+        navLinks.classList.remove('active');
+        overlay.classList.remove('active');
         hamburger.setAttribute('aria-expanded','false');
         unlockBody();
       };
 
       hamburger.addEventListener('click', openMobile);
-      closeMenu.addEventListener('click', closeMobile);
+      closeMenuBtn.addEventListener('click', closeMobile);
       overlay.addEventListener('click', closeMobile);
       window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMobile(); });
-      window.addEventListener('hashchange', closeMobile);
+      window.addEventListener('resize', ()=>{ if(window.innerWidth>=993) closeMobile(); });
+      document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') closeMobile(); });
 
       // Links internos com offset do header
       pageLinks.forEach(a=>{
@@ -542,8 +531,8 @@
         });
       });
 
-      // Também fecha o menu em qualquer click de link do drawer (incluindo WhatsApp externo)
-      document.querySelectorAll('.nav-links a').forEach(a=>{
+      // Fecha o drawer ao clicar em QUALQUER link do menu (inclusive WhatsApp)
+      allMenuAnchors.forEach(a=>{
         a.addEventListener('click', ()=> { if(navLinks.classList.contains('active')) closeMobile(); });
       });
 
